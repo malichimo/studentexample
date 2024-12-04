@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Personal Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        header img {
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            display: block;
+            margin: 0 auto;
+        }
+        main {
+            padding: 20px;
+        }
+        section {
+            margin-bottom: 30px;
+        }
+        .sports {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        iframe {
+            border: 0;
+        }
+        .countdown {
+            font-size: 1.5em;
+            text-align: center;
+            background: #333;
+            color: white;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="Scott Souza -Blessed Sacrament School.jpg" alt="Profile Picture">
+        <h1>Welcome to My Website!</h1>
+        <p>Created by a Middle School Student</p>
+    </header>
+    <main>
+        <div class="countdown" id="countdown">
+            Countdown to the Last Day of School: Calculating...
+        </div>
+        <section>
+            <h2>My Favorite Sports</h2>
+            <div class="sports">
+                <div>
+                    <h3>Football</h3>
+                    <p>My favorite team is the Patriots!</p>
+                    <iframe
+                        src="https://www.patriots.com/schedule/"
+                        width="350"
+                        height="500"
+                        title="Patriots Schedule">
+                    </iframe>
+                </div>
+                <div>
+                    <h3>Hockey</h3>
+                    <p>My favorite team is the Bruins!</p>
+                    <iframe
+                        src="https://www.nhl.com/bruins/schedule"
+                        width="350"
+                        height="500"
+                        title="Bruins Schedule">
+                    </iframe>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p style="text-align: center;">Website created for educational purposes by Scott Souza.</p>
+    </footer>
+    <script>
+        function calculateCountdown() {
+            const lastDay = new Date("2024-05-31T23:59:59");
+            const now = new Date();
+            const difference = lastDay - now;
+
+            const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+            document.getElementById("countdown").innerHTML = 
+                `Countdown to the Last Day of School: ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`;
+        }
+
+        setInterval(calculateCountdown, 1000);
+    </script>
+</body>
+</html>
