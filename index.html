@@ -46,6 +46,15 @@
             padding: 10px;
             margin-bottom: 20px;
         }
+        #pongCanvas {
+            background: #222;
+            display: block;
+            margin: 20px auto;
+        }
+        .game-container {
+            text-align: center;
+            margin-top: 40px;
+        }
     </style>
 </head>
 <body>
@@ -83,6 +92,10 @@
                 </div>
             </div>
         </section>
+        <section class="game-container">
+            <h2>Play Pong!</h2>
+            <canvas id="pongCanvas" width="800" height="400"></canvas>
+        </section>
     </main>
     <footer>
         <p style="text-align: center;">Website created for educational purposes by Scott Souza.</p>
@@ -103,7 +116,104 @@
         }
 
         setInterval(calculateCountdown, 1000);
+
+        // Pong game code
+        const canvas = document.getElementById('pongCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const paddleWidth = 10, paddleHeight = 100;
+        const ballSize = 10;
+
+        const leftPaddle = { x: 10, y: canvas.height / 2 - paddleHeight / 2, dy: 0 };
+        const rightPaddle = { x: canvas.width - 20, y: canvas.height / 2 - paddleHeight / 2, dy: 0 };
+
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            dx: 4,
+            dy: 4
+        };
+
+        function update() {
+            leftPaddle.y += leftPaddle.dy;
+            rightPaddle.y += rightPaddle.dy;
+
+            leftPaddle.y = Math.max(0, Math.min(canvas.height - paddleHeight, leftPaddle.y));
+            rightPaddle.y = Math.max(0, Math.min(canvas.height - paddleHeight, rightPaddle.y));
+
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            if (ball.y <= 0 || ball.y + ballSize >= canvas.height) {
+                ball.dy *= -1;
+            }
+
+            if (
+                ball.x <= leftPaddle.x + paddleWidth &&
+                ball.y + ballSize >= leftPaddle.y &&
+                ball.y <= leftPaddle.y + paddleHeight
+            ) {
+                ball.dx *= -1;
+                ball.x = leftPaddle.x + paddleWidth;
+            }
+
+            if (
+                ball.x + ballSize >= rightPaddle.x &&
+                ball.y + ballSize >= rightPaddle.y &&
+                ball.y <= rightPaddle.y + paddleHeight
+            ) {
+                ball.dx *= -1;
+                ball.x = rightPaddle.x - ballSize;
+            }
+
+            if (ball.x < 0 || ball.x > canvas.width) {
+                resetBall();
+            }
+        }
+
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.dx = Math.random() > 0.5 ? 4 : -4;
+            ball.dy = Math.random() > 0.5 ? 4 : -4;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(leftPaddle.x, leftPaddle.y, paddleWidth, paddleHeight);
+            ctx.fillRect(rightPaddle.x, rightPaddle.y, paddleWidth, paddleHeight);
+            ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
+
+            ctx.strokeStyle = '#fff';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'w') leftPaddle.dy = -6;
+            if (e.key === 's') leftPaddle.dy = 6;
+            if (e.key === 'ArrowUp') rightPaddle.dy = -6;
+            if (e.key === 'ArrowDown') rightPaddle.dy = 6;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'w' || e.key === 's') leftPaddle.dy = 0;
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') rightPaddle.dy = 0;
+        });
+
+        gameLoop();
     </script>
 </body>
 </html>
+
 
