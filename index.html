@@ -10,6 +10,7 @@
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
+            color: #333;
         }
         header {
             background-color: #333;
@@ -55,6 +56,17 @@
             text-align: center;
             margin-top: 40px;
         }
+        .score {
+            text-align: center;
+            font-size: 20px;
+            margin: 10px;
+        }
+        .message {
+            text-align: center;
+            font-size: 18px;
+            margin: 10px;
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -95,12 +107,15 @@
         <section class="game-container">
             <h2>Play Pong!</h2>
             <canvas id="pongCanvas" width="800" height="400"></canvas>
+            <div class="score" id="score">Player 1: 0 | Player 2: 0</div>
+            <div class="message" id="message">Press SPACE to start</div>
         </section>
     </main>
     <footer>
         <p style="text-align: center;">Website created for educational purposes by Scott Souza.</p>
     </footer>
     <script>
+        // Countdown Timer
         function calculateCountdown() {
             const lastDay = new Date("2025-05-31T23:59:59");
             const now = new Date();
@@ -117,72 +132,108 @@
 
         setInterval(calculateCountdown, 1000);
 
-        // Pong game code
+        // Pong Game Code
         const canvas = document.getElementById('pongCanvas');
         const ctx = canvas.getContext('2d');
-        
-        const paddleWidth = 10, paddleHeight = 100;
+        let gameStarted = false;
+
+        let leftPaddleHeight = 100;
+        let rightPaddleHeight = 100;
+        const paddleWidth = 10;
         const ballSize = 10;
 
-        const leftPaddle = { x: 10, y: canvas.height / 2 - paddleHeight / 2, dy: 0 };
-        const rightPaddle = { x: canvas.width - 20, y: canvas.height / 2 - paddleHeight / 2, dy: 0 };
+        let leftScore = 0;
+        let rightScore = 0;
+        const maxScore = 7;
+
+        const leftPaddle = { x: 10, y: canvas.height / 2 - leftPaddleHeight / 2, dy: 0 };
+        const rightPaddle = { x: canvas.width - 20, y: canvas.height / 2 - rightPaddleHeight / 2, dy: 0 };
 
         const ball = {
             x: canvas.width / 2,
             y: canvas.height / 2,
-            dx: 4,
-            dy: 4
+            dx: 0,
+            dy: 0
         };
 
-        function update() {
-            leftPaddle.y += leftPaddle.dy;
-            rightPaddle.y += rightPaddle.dy;
-
-            leftPaddle.y = Math.max(0, Math.min(canvas.height - paddleHeight, leftPaddle.y));
-            rightPaddle.y = Math.max(0, Math.min(canvas.height - paddleHeight, rightPaddle.y));
-
-            ball.x += ball.dx;
-            ball.y += ball.dy;
-
-            if (ball.y <= 0 || ball.y + ballSize >= canvas.height) {
-                ball.dy *= -1;
-            }
-
-            if (
-                ball.x <= leftPaddle.x + paddleWidth &&
-                ball.y + ballSize >= leftPaddle.y &&
-                ball.y <= leftPaddle.y + paddleHeight
-            ) {
-                ball.dx *= -1;
-                ball.x = leftPaddle.x + paddleWidth;
-            }
-
-            if (
-                ball.x + ballSize >= rightPaddle.x &&
-                ball.y + ballSize >= rightPaddle.y &&
-                ball.y <= rightPaddle.y + paddleHeight
-            ) {
-                ball.dx *= -1;
-                ball.x = rightPaddle.x - ballSize;
-            }
-
-            if (ball.x < 0 || ball.x > canvas.width) {
-                resetBall();
+        function startGame() {
+            if (!gameStarted) {
+                ball.dx = Math.random() > 0.5 ? 4 : -4;
+                ball.dy = Math.random() > 0.5 ? 4 : -4;
+                gameStarted = true;
+                document.getElementById('message').innerText = '';
             }
         }
 
-        function resetBall() {
+        function resetRound() {
             ball.x = canvas.width / 2;
             ball.y = canvas.height / 2;
-            ball.dx = Math.random() > 0.5 ? 4 : -4;
-            ball.dy = Math.random() > 0.5 ? 4 : -4;
+            ball.dx = 0;
+            ball.dy = 0;
+            gameStarted = false;
+            document.getElementById('message').innerText = 'Press SPACE to start';
+        }
+
+        function update() {
+            if (gameStarted) {
+                leftPaddle.y += leftPaddle.dy;
+                rightPaddle.y += rightPaddle.dy;
+
+                leftPaddle.y = Math.max(0, Math.min(canvas.height - leftPaddleHeight, leftPaddle.y));
+                rightPaddle.y = Math.max(0, Math.min(canvas.height - rightPaddleHeight, rightPaddle.y));
+
+                ball.x += ball.dx;
+                ball.y += ball.dy;
+
+                if (ball.y <= 0 || ball.y + ballSize >= canvas.height) ball.dy *= -1;
+
+                if (
+                    ball.x <= leftPaddle.x + paddleWidth &&
+                    ball.y + ballSize >= leftPaddle.y &&
+                    ball.y <= leftPaddle.y + leftPaddleHeight
+                ) {
+                    ball.dx *= -1;
+                    ball.x = leftPaddle.x + paddleWidth;
+                }
+
+                if (
+                    ball.x + ballSize >= rightPaddle.x &&
+                    ball.y + ballSize >= rightPaddle.y &&
+                    ball.y <= rightPaddle.y + rightPaddleHeight
+                ) {
+                    ball.dx *= -1;
+                    ball.x = rightPaddle.x - ballSize;
+                }
+
+                if (ball.x < 0) {
+                    rightScore++;
+                    updateScore();
+                    if (rightScore < maxScore) {
+                        leftPaddleHeight *= 0.9;
+                        resetRound();
+                    } else {
+                        endGame('Player 2');
+                    }
+                } else if (ball.x > canvas.width) {
+                    leftScore++;
+                    updateScore();
+                    if (leftScore < maxScore) {
+                        rightPaddleHeight *= 0.9;
+                        resetRound();
+                    } else {
+                        endGame('Player 1');
+                    }
+                }
+            }
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+
             ctx.fillStyle = '#fff';
-            ctx.fillRect(leftPaddle.x, leftPaddle.y, paddleWidth, paddleHeight);
-            ctx.fillRect(rightPaddle.x, rightPaddle.y, paddleWidth, paddleHeight);
+            ctx.fillRect(leftPaddle.x, leftPaddle.y, paddleWidth, leftPaddleHeight);
+            ctx.fillRect(rightPaddle.x, rightPaddle.y, paddleWidth, rightPaddleHeight);
+
             ctx.fillRect(ball.x, ball.y, ballSize, ballSize);
 
             ctx.strokeStyle = '#fff';
@@ -191,6 +242,15 @@
             ctx.moveTo(canvas.width / 2, 0);
             ctx.lineTo(canvas.width / 2, canvas.height);
             ctx.stroke();
+        }
+
+        function updateScore() {
+            document.getElementById('score').innerText = `Player 1: ${leftScore} | Player 2: ${rightScore}`;
+        }
+
+        function endGame(winner) {
+            document.getElementById('message').innerText = `${winner} wins! Refresh the page to play again.`;
+            gameStarted = false;
         }
 
         function gameLoop() {
@@ -202,18 +262,17 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'w') leftPaddle.dy = -6;
             if (e.key === 's') leftPaddle.dy = 6;
-            if (e.key === 'ArrowUp') rightPaddle.dy = -6;
-            if (e.key === 'ArrowDown') rightPaddle.dy = 6;
+            if (e.key === 'p') rightPaddle.dy = -6;
+            if (e.key === 'l') rightPaddle.dy = 6;
+            if (e.key === ' ') startGame();
         });
 
         document.addEventListener('keyup', (e) => {
             if (e.key === 'w' || e.key === 's') leftPaddle.dy = 0;
-            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') rightPaddle.dy = 0;
+            if (e.key === 'p' || e.key === 'l') rightPaddle.dy = 0;
         });
 
         gameLoop();
     </script>
 </body>
 </html>
-
-
